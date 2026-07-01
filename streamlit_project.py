@@ -93,7 +93,7 @@ st.set_page_config(page_title="Guitar Triad Master", page_icon="🎸", layout="c
 st.title("🎸 GUITAR TRIAD MASTER")
 st.markdown("---")
 
-st.sidebar.header("🎯 Configuration")
+st.sidebar.header("⏣ Configuration")
 user_note = st.sidebar.selectbox("Select Root Note:", list(notes_parser.keys()))
 scale_choice = st.sidebar.selectbox("Select Scale Type:", ["Major", "Minor"])
 mode_choice = st.sidebar.radio("Select Fretboard View Mode:", ["Full Fretboard", "3-String Mode (Triads)", "Single String Mode (Linear)"])
