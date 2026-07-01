@@ -6,6 +6,7 @@ This tool primarily uses modulo 12 to calculate and output scale intervals and n
 The tool functions as below:
 * User picks a root note and a scale
 * scale_gen(): Return the diatonic scale based on user's chosen note and scale
+* diatonic_gen(): Create the diatonic scale according to chosen note and scale
 * triad_gen(): Return the according triad based on scale_gen() output
 * triad_inv(): Create 3 version of the triad by rotating the sequence of notes
 * label_to_note(): Return the notes from numerical value back to alphabets
