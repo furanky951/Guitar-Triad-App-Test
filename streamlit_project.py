@@ -136,6 +136,18 @@ else:
 fretboard_string = fretboard(display_notes, result_notes, active_strings)
 st.code(fretboard_string, language="text")
 
+# Inversion Section
+st.subheader("🎶 Triad Inversions")
+inv_cols = st.columns(3)
+
+labels = ["Root Position", "1st Position", "2nd Position"]
+for i, inv in enumerate(invs):
+    with inv_cols[i]:
+        result_triad = label_to_note(inv, result_notes)
+        formatted_notes = " | ".join(f"{note:<2}" for note in result_triad)
+        st.write(f"{labels[i]}")
+        st.markdown(f"### `{formatted_notes}`")
+
 # Diatonic Scale Section
 st.subheader("🎼 Diatonic Scale Harmonization Sequence")
 chords_progression = diatonic_gen(scale_notes, scale_choice, result_notes)
@@ -150,15 +162,3 @@ for i, col in enumerate(cols):
     with col:
         st.markdown(f"##### {degree_roman_choice[i]}")
         st.markdown(f"**{chords_progression[i]}**")
-
-# Inversion Section
-st.subheader("🎶 Triad Inversions")
-inv_cols = st.columns(3)
-
-labels = ["Root Position", "1st Position", "2nd Position"]
-for i, inv in enumerate(invs):
-    with inv_cols[i]:
-        result_triad = label_to_note(inv, result_notes)
-        formatted_notes = " | ".join(f"{note:<2}" for note in result_triad)
-        st.write(f"{labels[i]}")
-        st.markdown(f"### `{formatted_notes}`")
