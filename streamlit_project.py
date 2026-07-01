@@ -2,12 +2,10 @@ import streamlit as st
 
 # Guitar Root Notes, second "B" is Flat
 notes_parser = {
-    'C': 0, 'C#': 1, 'DB': 1, 'D': 2, 'D#': 3, 'EB': 3, 'D#/EB': 3, 'E': 4, 'F': 5, 'F#': 6, 'GB': 6, 'F#/GB': 6,
-    'G': 7, 'G#': 8, 'AB': 8, 'G#/AB': 8, 'A': 9, 'A#': 10, 'BB': 10, 'A#/BB': 10, 'B': 11
+    'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11
 }
 
-sharps = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-flats  = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
+notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 #Major and Minor Scale : [Interval]
 scale = {
@@ -21,8 +19,24 @@ def scale_gen(root_note,scale_choice):
     scale_notes = [(root_note + i) % 12 for i in interval]
     return scale_notes
 
+def diatonic_gen(scale_notes, scale_choice, sf):
+    diatonic_degree = {
+    'Major': ['Maj', 'min', 'min', 'Maj', 'Maj', 'min', ' Dim'],
+    'Minor': ['min', ' Dim', 'Maj', 'min', 'min', 'Maj', 'Maj']
+}
+    
+    chord_dia = diatonic_degree[scale_choice]
+    chord_progression = []
+
+    for i in range(7):
+        chord_root_val = scale_notes[i]
+        chord_root = sf[chord_root_val]
+        full_chord = f"{chord_root}{chord_dia[i]}"
+        chord_progression.append(full_chord)
+    return chord_progression
+
 #Triad created based on root_note and its derived diatonic scale
-def diatonic_triads(scale_notes):
+def triad_gen(scale_notes):
     triads = []
     for i in range(7):
         triad = [
@@ -33,7 +47,7 @@ def diatonic_triads(scale_notes):
         triads.append(triad)
     return triads
 
-#Triad inversion, >12th interval means one octave higher than scale_notes
+#Triad inversion, over number 12 interval means one octave higher than scale_notes
 def triad_inv(triad):
     inv = [triad]
     inv.append([triad[1], triad[2], triad[0] + 12])
@@ -54,9 +68,9 @@ def fretboard(display_notes, user, active_strings=None):
         active_strings = list(range(6))
     
     output = ""
-    header = "    " + "  ".join(f"{fret:<4}" for fret in range(13))
+    header = "   " + "  ".join(f"{fret:<4}" for fret in range(13))
     output += header + "\n"
-    output += "    " + "=" * 80 + "\n"
+    output += "  " + "=" * 78 + "\n"
     
     for i, open_note in enumerate(strings):
         # If the string isn't selected, skip it or print empty space
@@ -71,38 +85,28 @@ def fretboard(display_notes, user, active_strings=None):
             else:
                 string_line += "--  | "
         output += string_line + "\n"
-    output += "    " + "=" * 80 + "\n"
+    output += "  " + "=" * 78 + "\n"
     return output
     
-st.set_page_config(page_title="Guitar Triad Visualizer", page_icon="🎸", layout="centered")
+st.set_page_config(page_title="Guitar Triad Master", page_icon="🎸", layout="centered")
 
 st.title("🎸 GUITAR TRIAD MASTER")
-st.write("PRACTICE YOUR TRIAD")
 st.markdown("---")
 
-# 1. Inputs via Sidebar
 st.sidebar.header("🎯 Configuration")
-root_selection = st.sidebar.selectbox("Select Root Note:", list(notes_parser.keys()))
-scale_selection = st.sidebar.selectbox("Select Scale Type:", ["Major", "Minor"])
-mode_selection = st.sidebar.radio("Select Fretboard View Mode:", ["Full Fretboard", "3-String Set (Triads)", "Single String (Linear)"])
-
-# 2. Process Core Logic Instantly
-user_note_val = notes_parser[root_selection]
-scale_notes = scale_gen(user_note_val, scale_selection)
-
-# Accidental Detector
-if "b" in root_selection or ("B" in root_selection and root_selection != "B"):
-    result_nomenclature = flats
-else:
-    result_nomenclature = sharps
-
-triads = diatonic_triads(scale_notes)
+user_note = st.sidebar.selectbox("Select Root Note:", list(notes_parser.keys()))
+scale_choice = st.sidebar.selectbox("Select Scale Type:", ["Major", "Minor"])
+mode_choice = st.sidebar.radio("Select Fretboard View Mode:", ["Full Fretboard", "3-String Mode (Triads)", "Single String Mode (Linear)"])
+user_note_val = notes_parser[user_note]
+scale_notes = scale_gen(user_note_val, scale_choice)
+result_notes = notes
+triads = triad_gen(scale_notes)
 invs = triad_inv(triads[0])
 
-# 3. Handle Interactive View Layouts
+# Fretboard Computing Section
 active_strings = None
 
-if mode_selection == "3-String Set (Triads)":
+if mode_choice == "3-String Mode (Triads)":
     string_set_choice = st.sidebar.selectbox("Choose String Set:", [
         "E, B, G (Strings 1, 2, 3)", 
         "B, G, D (Strings 2, 3, 4)", 
@@ -116,27 +120,45 @@ if mode_selection == "3-String Set (Triads)":
         "D, A, E (Strings 4, 5, 6)": [3, 4, 5]
     }
     active_strings = set_mapping[string_set_choice]
-    # Merge all inversion note values to map them out together
     display_notes = invs[0] + invs[1] + invs[2]
-    st.subheader(f"Practicing Triads for {root_selection} {scale_selection.upper()}")
+    st.subheader(f"𝄞 Practicing Triads for {user_note} {scale_choice.upper()}")
 
-elif mode_selection == "Single String (Linear)":
+elif mode_choice == "Single String Mode (Linear)":
     string_choice = st.sidebar.slider("Select String (1=High E, 6=Low E):", 1, 6, 1)
     active_strings = [string_choice - 1]
     display_notes = scale_notes
-    st.subheader(f"{root_selection} {scale_selection} Scale — String {string_choice}")
+    st.subheader(f"{user_note} {scale_choice} Scale — String {string_choice}")
 
-else:  # Full Fretboard
+else:
     display_notes = scale_notes
-    st.subheader(f"Full Fretboard Mapping: {root_selection} {scale_selection}")
+    st.subheader(f"Full Fretboard Mapping: {user_note} {scale_choice}")
 
-# 4. Render the Monospaced Fretboard
-fretboard_string = fretboard(display_notes, result_nomenclature, active_strings)
+fretboard_string = fretboard(display_notes, result_notes, active_strings)
 st.code(fretboard_string, language="text")
 
-# 5. Render Aligned Text Inversions Bottom Sheet
-st.markdown("### 🎼 Triad Inversions Breakdown")
+# Diatonic Scale Section
+st.subheader("🎼 Diatonic Scale Harmonization Sequence")
+chords_progression = diatonic_gen(scale_notes, scale_choice, result_notes)
+
+degree_roman = {
+    'Major': ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'],
+    'Minor': ['i', 'ii°', 'III', 'iv', 'v', 'VI', 'VII']
+}
+degree_roman_choice = degree_roman[scale_choice]
+cols = st.columns(7)
+for i, col in enumerate(cols):
+    with col:
+        st.markdown(f"##### {degree_roman_choice[i]}")
+        st.markdown(f"**{chords_progression[i]}**")
+
+# Inversion Section
+st.subheader("🎶 Triad Inversions")
+inv_cols = st.columns(3)
+
+labels = ["Root Position", "1st Position", "2nd Position"]
 for i, inv in enumerate(invs):
-    note_names = label_to_note(inv, result_nomenclature)
-    alignment = [f"{note:<2}" for note in note_names]
-    st.markdown(f"**Inversion {i}**: `{' | '.join(alignment)}`")
+    with inv_cols[i]:
+        result_triad = label_to_note(inv, result_notes)
+        formatted_notes = " | ".join(f"{note:<2}" for note in result_triad)
+        st.write(f"{labels[i]}")
+        st.markdown(f"### `{formatted_notes}`")
