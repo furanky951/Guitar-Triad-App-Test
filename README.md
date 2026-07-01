@@ -1,5 +1,4 @@
 # Project Title: Guitar Triad Master
-#### Video Demo: URL
 #### Description: A small project built using Python to help guitarists map out triad inversions dynamically across the fingerboard.
 
 This tool primarily uses modulo 12 to calculate and output scale intervals and notes relationship, then display on a simple computer ASCII style fingerboard.
