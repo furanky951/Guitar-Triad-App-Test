@@ -58,10 +58,10 @@ def triad_inv(triad):
 def label_to_note(triad, user):
     return [user[note % 12] for note in triad]
 
-def fretboard(display_notes, user, active_strings=None):
+def fretboard(target_notes, user, active_strings=None):
     strings = [4, 11, 7, 2, 9, 4]
     string_names = ['E', 'B', 'G', 'D', 'A', 'E']
-    target_notes_mod = [n % 12 for n in display_notes]
+    display_notes = [n % 12 for n in target_notes]
     
     # Default to all strings if no subset is passed
     if active_strings is None:
@@ -79,9 +79,9 @@ def fretboard(display_notes, user, active_strings=None):
             
         string_line = f"{string_names[i]} |"
         for fret in range(13):
-            current_note_val = (open_note + fret) % 12
-            if current_note_val in target_notes_mod:
-                string_line += f"{user[current_note_val]:<3} | "
+            current_fret = (open_note + fret) % 12
+            if current_fret in display_notes:
+                string_line += f"{user[current_fret]:<3} | "
             else:
                 string_line += "--  | "
         output += string_line + "\n"
@@ -105,6 +105,7 @@ invs = triad_inv(triads[0])
 
 # Fretboard Computing Section
 active_strings = None
+display_notes = invs[0] + invs[1] + invs[2]
 
 if mode_choice == "3-String Mode (Triads)":
     string_set_choice = st.sidebar.selectbox("Choose String Set:", [
@@ -120,17 +121,14 @@ if mode_choice == "3-String Mode (Triads)":
         "D, A, E (Strings 4, 5, 6)": [3, 4, 5]
     }
     active_strings = set_mapping[string_set_choice]
-    display_notes = invs[0] + invs[1] + invs[2]
     st.subheader(f"𝄞 Practicing Triads for {user_note} {scale_choice.upper()}")
 
 elif mode_choice == "Single String Mode (Linear)":
     string_choice = st.sidebar.slider("Select String (1=High E, 6=Low E):", 1, 6, 1)
     active_strings = [string_choice - 1]
-    display_notes = scale_notes
     st.subheader(f"{user_note} {scale_choice} Scale — String {string_choice}")
 
 else:
-    display_notes = scale_notes
     st.subheader(f"Full Fretboard Mapping: {user_note} {scale_choice}")
 
 fretboard_string = fretboard(display_notes, result_notes, active_strings)
